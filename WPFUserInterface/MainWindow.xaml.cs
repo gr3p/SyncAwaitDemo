@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
 
 namespace WPFUserInterface
 {
@@ -18,8 +17,10 @@ namespace WPFUserInterface
             InitializeComponent();
         }
 
+        public HttpClient HttpClient { get; set; } = new HttpClient();
         private void executeSync_Click(object sender, RoutedEventArgs e)
         {
+            ClearControls();
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
             RunDownloadSync();
@@ -27,11 +28,12 @@ namespace WPFUserInterface
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
 
-            resultsWindowBlack.Text += $"Total execution time: { elapsedMs }";
+            resultsWindowBlack.Text += $"\n Total execution time: { elapsedMs }";
         }
 
         private async void executeAsync_Click(object sender, RoutedEventArgs e)
         {
+            ClearControls();
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
             await RunDownloadParallelAsync();
@@ -39,8 +41,9 @@ namespace WPFUserInterface
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
 
-            resultsWindowBlack.Text += $"Total execution time: { elapsedMs }";
+            resultsWindowBlack.Text += $"\n Total execution time: { elapsedMs }";
         }
+
 
         private List<string> PrepData()
         {
@@ -56,6 +59,12 @@ namespace WPFUserInterface
             output.Add("https://www.stackoverflow.com");
 
             return output;
+        }
+
+        private void ClearControls()
+        {
+            resultsWindowBlack.Text = string.Empty;
+            resultsWindowGreen.Text = string.Empty;
         }
         /// <summary>
         /// Async but not with async threads.
@@ -104,34 +113,39 @@ namespace WPFUserInterface
             }
         }
 
-        private WebsiteDataModel DownloadWebsite(string websiteURL)
+        private WebsiteDataModel DownloadWebsite(string websiteUrl)
         {
             WebsiteDataModel output = new WebsiteDataModel();
             WebClient client = new WebClient();
 
-            output.WebsiteUrl = websiteURL;
-            output.WebsiteData = client.DownloadString(websiteURL);
-
+            output.WebsiteUrl = websiteUrl;
+            var result = client.DownloadString(websiteUrl);
+            output.WebsiteData = result;
+            output.getResults = !string.IsNullOrEmpty(result);
             return output;
         }
 
         private async Task<WebsiteDataModel> DownloadWebsiteAsync(string websiteUrl)
         {
             WebsiteDataModel output = new WebsiteDataModel();
-            WebClient client = new WebClient();
 
             output.WebsiteUrl = websiteUrl;
-            output.WebsiteData = await client.DownloadStringTaskAsync(websiteUrl);
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var result = await HttpClient.GetStringAsync(websiteUrl);
 
+            output.getResults = !string.IsNullOrEmpty(result);
+
+            output.WebsiteData = result;
+            output.ThreadElapsedTime = $"{stopwatch.ElapsedMilliseconds}";
             return output;
         }
 
         private void ReportWebsiteInfo(WebsiteDataModel data)
         {
-           
-            resultsWindowBlack.Text += $"{ data.WebsiteUrl } downloaded: { data.WebsiteData.Length } length.{ Environment.NewLine }";
-            resultsWindowGreen.Text += $"\t OK! { Environment.NewLine }";
-           
+
+            resultsWindowBlack.Text += $"{ data.WebsiteUrl } (DL: { data.WebsiteData.Length } bytes). Time: {data.ThreadElapsedTime} ms. { Environment.NewLine }";
+            resultsWindowGreen.Text += $"\t {(data.getResults ? "OK!" : "FAILED!")} { Environment.NewLine }";
+
         }
     }
 }

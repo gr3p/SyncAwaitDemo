@@ -5,13 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFUserInterface"
         mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="825" FontSize="16" WindowStartupLocation="CenterScreen">
+        Title="Async Demo App" Height="500" Width="825" FontSize="16" WindowStartupLocation="CenterScreen">
 
     <Grid Margin="20">
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition  Width="Auto"/>
           
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -22,7 +22,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="1" Margin="10 0" FontSize="28">
-            Simple Async Demo App
+            Async Demo App
         </TextBlock>
 
         <Button x:Name="executeSync" Grid.Row="2" Margin="10" Grid.Column="0" Padding="10" Click="executeSync_Click">Run Normal Execute</Button>
@@ -30,4 +30,5 @@
         <TextBlock x:Name="resultsWindowBlack" Grid.Row="4" Grid.Column="0" Margin="10" Foreground="black"/>
         <TextBlock x:Name="resultsWindowGreen" Grid.Row="4" Grid.Column="1" Margin="10" Foreground="Green"/>
     </Grid>
+
 </Window>

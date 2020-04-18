@@ -10,5 +10,7 @@ namespace WPFUserInterface
     {
         public string WebsiteUrl { get; set; } = "";
         public string WebsiteData { get; set; } = "";
+        public string ThreadElapsedTime { get; set; } = "";
+        public bool getResults { get; set; } = false;
     }
 }
