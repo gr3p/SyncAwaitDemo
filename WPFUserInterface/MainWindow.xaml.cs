@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -44,6 +46,11 @@ namespace WPFUserInterface
             resultsWindowBlack.Text += $"\n Total execution time: { elapsedMs }";
         }
 
+        private  void executeCancel_Click(object sender, RoutedEventArgs e)
+        {
+            ClearControls();
+            resultsWindowBlack.Text = "Works";
+        }
 
         private List<string> PrepData()
         {
@@ -56,7 +63,9 @@ namespace WPFUserInterface
             output.Add("https://www.ikea.se");
             output.Add("https://www.cnn.com");
             output.Add("https://www.bbc.com");
-            output.Add("https://www.stackoverflow.com");
+            output.Add("https://www.di.se");
+            output.Add("https://www.nyteknik.se");
+            
 
             return output;
         }
@@ -89,55 +98,107 @@ namespace WPFUserInterface
             List<string> websites = PrepData();
             List<Task<WebsiteDataModel>> tasks = new List<Task<WebsiteDataModel>>();
 
+
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             foreach (string site in websites)
             {
                 tasks.Add(DownloadWebsiteAsync(site));
             }
 
             var results = await Task.WhenAll(tasks);
-
+            
+ 
             foreach (var item in results)
             {
                 ReportWebsiteInfo(item);
+            }
+            while (results.Length > 0)
+            {
+                timer.Stop();
+                resultsWindowGreen.Text += $"\t Total Execution time: {timer.ElapsedMilliseconds} ms.";
+                break;
             }
         }
 
         private void RunDownloadSync()
         {
-            List<string> websites = PrepData();
-
-            foreach (string site in websites)
+            try
             {
-                WebsiteDataModel results = DownloadWebsite(site);
-                ReportWebsiteInfo(results);
+                long totaltime = 0;
+                List<string> websites = PrepData();
+
+                foreach (string site in websites)
+                {
+                    WebsiteDataModel results = DownloadWebsite(site);
+                    if (results == null) { break; }
+                    
+                    ReportWebsiteInfo(results);
+                    totaltime += results.ElapsedTimeLong;
+                }
+
+                resultsWindowGreen.Text += $"\t Total Execution time: {totaltime} ms.";
             }
+            catch (System.Net.WebException webc)
+            {
+                resultsWindowBlack.Text = "Url Not valid exception!";
+            }
+            
         }
 
         private WebsiteDataModel DownloadWebsite(string websiteUrl)
         {
-            WebsiteDataModel output = new WebsiteDataModel();
-            WebClient client = new WebClient();
+            try
+            {
+                WebsiteDataModel output = new WebsiteDataModel();
+                WebClient client = new WebClient();
 
-            output.WebsiteUrl = websiteUrl;
-            var result = client.DownloadString(websiteUrl);
-            output.WebsiteData = result;
-            output.getResults = !string.IsNullOrEmpty(result);
-            return output;
+                output.WebsiteUrl = websiteUrl;
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var result = client.DownloadString(websiteUrl);
+                output.WebsiteData = result;
+                output.getResults = !string.IsNullOrEmpty(result);
+                watch.Stop();
+
+                output.ThreadElapsedTime = watch.ElapsedMilliseconds.ToString();
+                output.ElapsedTimeLong = watch.ElapsedMilliseconds;
+
+                return output;
+            }
+            catch (System.Net.WebException webc)
+            {
+                resultsWindowBlack.Text = "Url Not valid exception! :: "+ webc;
+            }
+           
+
+            return null;
         }
 
         private async Task<WebsiteDataModel> DownloadWebsiteAsync(string websiteUrl)
         {
-            WebsiteDataModel output = new WebsiteDataModel();
+            try
+            {
+               
+                WebsiteDataModel output = new WebsiteDataModel();
 
-            output.WebsiteUrl = websiteUrl;
-            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            var result = await HttpClient.GetStringAsync(websiteUrl);
+                output.WebsiteUrl = websiteUrl;
+                var stopwatch = Stopwatch.StartNew();
+                var result = await HttpClient.GetStringAsync(websiteUrl);
 
-            output.getResults = !string.IsNullOrEmpty(result);
+                output.getResults = !string.IsNullOrEmpty(result);
 
-            output.WebsiteData = result;
-            output.ThreadElapsedTime = $"{stopwatch.ElapsedMilliseconds}";
-            return output;
+                output.WebsiteData = result;
+                output.ThreadElapsedTime = $"{stopwatch.ElapsedMilliseconds}";
+                
+
+                return output;
+            }
+            catch (System.Net.WebException webc)
+            {
+                resultsWindowBlack.Text = "Url Not valid exception!";
+            }
+
+            return null;
         }
 
         private void ReportWebsiteInfo(WebsiteDataModel data)

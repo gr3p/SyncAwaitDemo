@@ -12,9 +12,10 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition  Width="Auto"/>
-          
+
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
@@ -27,8 +28,9 @@
 
         <Button x:Name="executeSync" Grid.Row="2" Margin="10" Grid.Column="0" Padding="10" Click="executeSync_Click">Run Normal Execute</Button>
         <Button x:Name="executeAsync" Grid.Row="3" Margin="10"  Grid.Column="0" Padding="10" Click="executeAsync_Click">Run Async Execute</Button>
-        <TextBlock x:Name="resultsWindowBlack" Grid.Row="4" Grid.Column="0" Margin="10" Foreground="black"/>
-        <TextBlock x:Name="resultsWindowGreen" Grid.Row="4" Grid.Column="1" Margin="10" Foreground="Green"/>
+        <Button x:Name="executeCancel" Grid.Row="4" Margin="10"  Grid.Column="0" Padding="10" Click="executeCancel_Click">Cancel Execution</Button>
+        <TextBlock x:Name="resultsWindowBlack" Grid.Row="5" Grid.Column="0" Margin="10,10,-309,10" Foreground="black" Grid.ColumnSpan="2"/>
+        <TextBlock x:Name="resultsWindowGreen" Grid.Row="5" Grid.Column="1" Margin="425,10,-523,10" Foreground="Green"/>
     </Grid>
 
 </Window>
